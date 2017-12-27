@@ -1,3 +1,4 @@
+#pragma once
 #include "global.h"
 
 vector<vector<string> > parse_text(const string& file){
@@ -19,7 +20,16 @@ vector<vector<string> > parse_text(const string& file){
   return lines;
 }
 
-void readObj(const string& filename, MatrixXf &pts, MatrixXi &tris) {
+class Mesh{
+public:
+  MatrixXf pts;
+  MatrixXu tris;
+}
+
+void readObj(const string& filename, Mesh& mesh) {
+  MatrixXf& pts = mesh.pts;
+  MatrixXu& tris = mesh.tris;
+
   vector<vector<string> >lines = parse_text(filename);
   vector<vector<string> >pts_txt, tris_txt;
   for (size_t i = 0; i < lines.size(); ++i){
