@@ -1,5 +1,8 @@
 #pragma once
 #include "global.h"
+#include<vector>
+#include<fstream>
+#include<iterator>
 
 vector<vector<string> > parse_text(const string& file){
   ifstream input(file);
@@ -23,28 +26,30 @@ vector<vector<string> > parse_text(const string& file){
 class Mesh{
 public:
   MatrixXf pts;
-  MatrixXu tris;
-}
+  MatrixXi tris;
+};
 
 void readObj(const string& filename, Mesh& mesh) {
   MatrixXf& pts = mesh.pts;
-  MatrixXu& tris = mesh.tris;
+  MatrixXi& tris = mesh.tris;
 
   vector<vector<string> >lines = parse_text(filename);
   vector<vector<string> >pts_txt, tris_txt;
   for (size_t i = 0; i < lines.size(); ++i){
     if (lines[i][0] == "v")
-      pts_txt.push_back(line[i]);
+      pts_txt.push_back(lines[i]);
     if (lines[i][0] == "f")
-      tris_txt.push_back(line[i]);
+      tris_txt.push_back(lines[i]);
   }
+
   // store value from text
   pts.resize(3, pts_txt.size());
+  for(size_t i=0; i < pts_txt.size(); ++i)
+    for(size_t j = 0; j < 3; ++j)
+      pts(j, i) = stof(pts_txt[i][j+1]);
+
   tris.resize(3, tris_txt.size());
-  for(auto&& t:pts_txt)
+  for(size_t i=0; i < tris_txt.size(); ++i)
     for(size_t j = 0; j < 3; ++j)
-      pts(j, i) = stof(t[j]);
-  for(auto&& t:tris_txt)
-    for(size_t j = 0; j < 3; ++j)
-      pts(j, i) = stof(t[j])-1;
+      tris(j, i) = stoi(tris_txt[i][j+1])-1;
 }

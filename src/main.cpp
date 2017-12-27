@@ -3,11 +3,20 @@
 #include "wavefront.h"
 #include "show.h"
 
+void initGlobalColorVars(){
+  white << 255, 255, 255;
+  black << 0, 0, 0;
+  red << 255, 0, 0;
+  green << 0, 255, 0;
+  blue << 0, 0, 255;
+}
+
 int main(int argc, char** argv)
 {
-  if(argc != 2)return 0 && printf("usage: %s model.obj", argv[0]);
+  if(argc != 2)return printf("usage: %s model.obj\n", argv[0]);
   Mesh mesh;
   readObj(argv[1], mesh);
+  initGlobalColorVars();
 
   GLFWwindow* window;
 
@@ -16,7 +25,7 @@ int main(int argc, char** argv)
     return -1;
 
   /* Create a windowed mode window and its OpenGL context */
-  window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
+  window = glfwCreateWindow(width, height, "Hello World", NULL, NULL);
   if (!window)
   {
     glfwTerminate();
