@@ -1,3 +1,5 @@
+#pragma once
+
 #include<iostream>
 #include<ifstream>
 #include<vector>
@@ -5,5 +7,5 @@
 #include<GLFW/glfw3.h>
 
 using namespace std;
-using Eigen::MatrixXd;
+using namespace Eigen;
 
