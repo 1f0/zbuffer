@@ -1,8 +1,13 @@
 // 区间扫描线z缓冲器
-#include <GLFW/glfw3.h>
+#include "global.h"
+#include "wavefront.h"
+#include "show.h"
 
-int main(void)
+int main(int argc, char** argv)
 {
+		if(argc != 2)return 0 && printf("usage: %s model.obj", argv[0]);
+		readObj(argv[1]);
+
     GLFWwindow* window;
 
     /* Initialize the library */
@@ -25,6 +30,8 @@ int main(void)
     {
         /* Render here */
         glClear(GL_COLOR_BUFFER_BIT);
+
+				show();
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
