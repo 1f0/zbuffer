@@ -18,25 +18,23 @@ void triangle() {
 }
 
 class Image{
-  vector<unsigned> frame;
+  vector<float> frame;
   const size_t w,h;
 public:
   Image(size_t w, size_t h):w(w),h(h),frame(w*h*3){}
-  inline void set(size_t i, size_t j, RGB color){
+  inline void set(size_t i, size_t j, const RGB& color){
     for(size_t k=0;k<3;++k)
-        frame[3*(w*i+j)+k] = color[k];
+      frame[3*(j*w+i)+k] = color[k];
   }
 
   void clear() {
-    RGB black;
-    black << 0,0,0;
-    for(size_t i=0;i<w;++i)
-      for(size_t j=0;j<h;++j)
+    for(size_t j=0;j<h;++j)
+      for(size_t i=0;i<w;++i)
         set(i, j, black);
   };
 
   void display() {
-    glDrawPixels(w, h, GL_RGB, GL_UNSIGNED_INT, frame.data());
+    glDrawPixels(w, h, GL_RGB, GL_FLOAT, frame.data());
   }
 
   inline void checkRange(const Vector2i& pt){
@@ -65,7 +63,7 @@ public:
     int y = src[1];
 
     for (int x=src[0]; x <= dst[0]; ++x) {
-      if(steep)set(x, y, white);
+      if(steep)set(y, x, white);
       else set(x, y, white);
 
       error2 += derror2;
@@ -87,7 +85,7 @@ void show(Mesh& mesh) {
 
   Vector2i src, dst;
   src << 0, 0;
-  dst << width, height;
+  dst << 100, 100;
 
   buffer.line(src, dst);
   buffer.display();

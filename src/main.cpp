@@ -4,11 +4,11 @@
 #include "show.h"
 
 void initGlobalColorVars(){
-  white << 255, 255, 255;
+  white << 1, 1, 1;
   black << 0, 0, 0;
-  red << 255, 0, 0;
-  green << 0, 255, 0;
-  blue << 0, 0, 255;
+  red << 1, 0, 0;
+  green << 0, 1, 0;
+  blue << 0, 0, 1;
 }
 
 int main(int argc, char** argv)

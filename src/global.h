@@ -6,8 +6,8 @@
 using namespace std;
 using namespace Eigen;
 
-const size_t width = 2;//640;
-const size_t height = 2;//480;
+const size_t width = 640;
+const size_t height = 480;
 
-typedef Vector3i RGB;
+typedef Vector3f RGB;
 RGB white, black, red, green, blue;
