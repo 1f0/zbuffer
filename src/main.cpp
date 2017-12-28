@@ -4,7 +4,7 @@
 #include "show.h"
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-  if (action == GLFW_PRESS){
+  if (action == GLFW_PRESS || action == GLFW_REPEAT){
   	switch(key){
   	case GLFW_KEY_ESCAPE:exit(0);
   	case GLFW_KEY_W:lat-=0.0625;break;
@@ -16,6 +16,18 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
   	}
     update = true;
     cout<<"scale: "<<scale<<" lng: "<<lng<<" lat: "<<lat<<endl;
+  }
+}
+
+void monitorFPS(){
+  static double lastTime = glfwGetTime();
+  static int frameCount = 0;
+  double currentTime = glfwGetTime();
+  ++frameCount;
+  if(currentTime-lastTime >= 1){
+    cout << "fps: " << frameCount/(currentTime-lastTime) << endl;
+    frameCount = 0;
+    lastTime = currentTime;
   }
 }
 
@@ -46,6 +58,8 @@ int main(int argc, char** argv) {
   /* Loop until the user closes the window */
   while (!glfwWindowShouldClose(window))
   {
+    monitorFPS();
+
     /* Render here */
     glClear(GL_COLOR_BUFFER_BIT);
 
