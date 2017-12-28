@@ -3,20 +3,11 @@
 #include "wavefront.h"
 #include "show.h"
 
-void initGlobalColorVars(){
-  white << 1, 1, 1;
-  black << 0, 0, 0;
-  red << 1, 0, 0;
-  green << 0, 1, 0;
-  blue << 0, 0, 1;
-}
-
 int main(int argc, char** argv)
 {
   if(argc != 2)return printf("usage: %s model.obj\n", argv[0]);
   Mesh mesh;
   readObj(argv[1], mesh);
-  initGlobalColorVars();
 
   GLFWwindow* window;
 

@@ -20,32 +20,28 @@ void triangle() {
 class Image{
   vector<float> frame;
   const size_t w,h;
+  inline int mod(int a, int b){
+  	return (a % b + b)%b;
+  }
 public:
   Image(size_t w, size_t h):w(w),h(h),frame(w*h*3){}
   inline void set(size_t i, size_t j, const RGB& color){
+  	i = mod(i, w);
+  	j = mod(j, h);
     for(size_t k=0;k<3;++k)
       frame[3*(j*w+i)+k] = color[k];
   }
 
   void clear() {
-    for(size_t j=0;j<h;++j)
-      for(size_t i=0;i<w;++i)
-        set(i, j, black);
-  };
+  	for(size_t i = 0; i < frame.size(); ++i)
+  		frame[i] = 0;
+  }
 
   void display() {
     glDrawPixels(w, h, GL_RGB, GL_FLOAT, frame.data());
   }
 
-  inline void checkRange(const Vector2i& pt){
-    assert(pt[0] >= 0 && pt[0] < w);
-    assert(pt[1] >= 0 && pt[1] < h);
-  }
-
   void line(Vector2i src, Vector2i dst) {
-    checkRange(src);
-    checkRange(dst);
-    
     bool steep = false;
     if (abs(src[0] - dst[0]) < abs(src[1] - dst[1])){
       steep = true;
@@ -75,18 +71,23 @@ public:
   }
 };
 
-void show(Mesh& mesh) {
-  MatrixXf& pts = mesh.pts;
-  MatrixXi& tris = mesh.tris;
-  // wireframe
+void wireframe(const Mesh& mesh, Image& buffer) {
+  const MatrixXf& pts = mesh.pts;
+  const MatrixXi& tris = mesh.tris;
+  for (int i=0;i<tris.cols();++i){
+  	Vector3i face = tris.col(i);
+  	for (int j=0;j<3;++j){
+  	  Vector3f wh(width-1, height-1, 1);
+  	  Vector3f vs = (pts.col(face(j))+Vector3f::Ones(3,1)).cwiseProduct(wh)/2;
+  	  Vector3f vt = (pts.col(face((j+1)%3))+Vector3f::Ones(3,1)).cwiseProduct(wh)/2;
+  	  buffer.line({(int)vs[0], (int)vs[1]}, {(int)vt[0], (int)vt[1]});
+  	}
+  }  
+}
 
+void show(const Mesh& mesh){
   static Image buffer(width, height);
   buffer.clear();
-
-  Vector2i src, dst;
-  src << 0, 0;
-  dst << 100, 100;
-
-  buffer.line(src, dst);
+  wireframe(mesh, buffer);
   buffer.display();
 }
