@@ -3,11 +3,26 @@
 #include "wavefront.h"
 #include "show.h"
 
-int main(int argc, char** argv)
-{
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+  if (action == GLFW_PRESS){
+  	switch(key){
+  	case GLFW_KEY_ESCAPE:exit(0);
+  	case GLFW_KEY_W:lat-=0.0625;break;
+  	case GLFW_KEY_S:lat+=0.0625;break;
+  	case GLFW_KEY_A:lng-=0.0625;break;
+  	case GLFW_KEY_D:lng+=0.0625;break;
+  	case GLFW_KEY_Q:if(scale < 128)scale *= 2;break;
+  	case GLFW_KEY_E:if(scale > 1/128)scale /= 2;break;
+  	}
+    update = true;
+    cout<<"scale: "<<scale<<" lng: "<<lng<<" lat: "<<lat<<endl;
+  }
+}
+
+int main(int argc, char** argv) {
   if(argc != 2)return printf("usage: %s model.obj\n", argv[0]);
-  Mesh mesh;
-  readObj(argv[1], mesh);
+  Mesh mesh(argv[1]);
+  normalize(mesh.pts);
 
   GLFWwindow* window;
 
@@ -25,6 +40,8 @@ int main(int argc, char** argv)
 
   /* Make the window's context current */
   glfwMakeContextCurrent(window);
+
+  glfwSetKeyCallback(window, key_callback);
 
   /* Loop until the user closes the window */
   while (!glfwWindowShouldClose(window))
