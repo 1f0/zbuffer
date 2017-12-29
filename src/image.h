@@ -47,10 +47,18 @@ public:
     }
   }
 
+  // this interface is slow
   void wireTriangle(const MatrixXi& t) {
     for (int i = 0; i < 3; ++i) {
       int j = (i + 1) % 3;
       line(t.col(i), t.col(j));
+    }
+  }
+
+  inline void wireTriangle(const Vector2i t[3]) {
+    for (size_t i = 0; i < 3; ++i) {
+      size_t j = (i + 1) % 3;
+      line(t[i], t[j]);
     }
   }
 };
