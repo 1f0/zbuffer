@@ -1,7 +1,9 @@
 #pragma once
-#include<iostream>
-#include<Eigen/Dense>
-#include<GLFW/glfw3.h>
+#include <iostream>
+#include <algorithm>
+#include <Eigen/Dense>
+#include <Eigen/Geometry>
+#include <GLFW/glfw3.h>
 
 using namespace std;
 using namespace Eigen;
@@ -16,7 +18,7 @@ const RGB red(1, 0, 0);
 const RGB green(0, 1, 0);
 const RGB blue(0, 0, 1);
 
-enum Mode {wire, sweep, numOfMode};
+enum Mode {wire, box, sweep, numOfMode};
 Mode mode = wire;
 bool update = true;
 

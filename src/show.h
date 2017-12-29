@@ -26,6 +26,17 @@ void wireframe(const Mesh& mesh, Image& buffer) {
   }
 }
 
+void fillBox(const Mesh& mesh, Image& buffer) {
+  //TODO: clipping here
+  MatrixXi pts2 = project(mesh.tris, buffer.w, buffer.h);
+  for (size_t i = 0; i < pts2.cols(); i=i+3) {
+    Vector2i tris_pts[3];
+    for(size_t j=0; j<3; ++j)
+      tris_pts[j] = pts2.col(i+j);
+    buffer.triangle(tris_pts);
+  }
+}
+
 void show(const Mesh& mesh) {
   static Image buffer(width, height);
   static Mesh tmp = mesh;
@@ -36,6 +47,7 @@ void show(const Mesh& mesh) {
   buffer.clear();
   switch (mode) {
   case wire: wireframe(tmp, buffer); break;
+  case box: fillBox(tmp, buffer); break;
   case sweep: lineSweep(tmp, buffer); break;
   }
   buffer.display();
