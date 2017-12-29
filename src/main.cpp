@@ -13,9 +13,11 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
   	case GLFW_KEY_D:lng+=0.0625;break;
   	case GLFW_KEY_Q:if(scale < 128)scale *= 2;break;
   	case GLFW_KEY_E:if(scale > 1/128)scale /= 2;break;
+    case GLFW_KEY_R:mode=static_cast<Mode>((mode+1)%(numOfMode));break;
   	}
     update = true;
-    cout<<"scale: "<<scale<<" lng: "<<lng<<" lat: "<<lat<<endl;
+    cout<<"scale:"<<scale<<" lng:"<<lng
+    <<" lat:"<<lat<<" mode:"<<mode<<endl;
   }
 }
 
@@ -37,7 +39,6 @@ int main(int argc, char** argv) {
   normalize(mesh.pts);
 
   GLFWwindow* window;
-
   /* Initialize the library */
   if (!glfwInit())
     return -1;
@@ -52,7 +53,6 @@ int main(int argc, char** argv) {
 
   /* Make the window's context current */
   glfwMakeContextCurrent(window);
-
   glfwSetKeyCallback(window, key_callback);
 
   /* Loop until the user closes the window */

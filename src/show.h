@@ -83,6 +83,10 @@ void wireframe(const Mesh& mesh, Image& buffer) {
   }
 }
 
+void simpleScanLine(const Mesh& mesh, Image& buffer) {
+  
+}
+
 void show(const Mesh& mesh){
   static Image buffer(width, height);
   static Mesh tmp(mesh.tris);
@@ -93,6 +97,7 @@ void show(const Mesh& mesh){
   buffer.clear();
   switch(mode){
   	case wire:wireframe(tmp, buffer);break;
+  	case simScan:simpleScanLine(tmp, buffer);break;
   }
   buffer.display();
 }
