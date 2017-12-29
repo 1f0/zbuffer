@@ -21,11 +21,11 @@ void wireframe(const Mesh& mesh, Image& buffer) {
   // clipping
   MatrixXi pts2 = project(mesh.pts, buffer.w, buffer.h);
 
+  MatrixXi tri_pts(2, 3);
   for (int i = 0; i < tris.cols(); ++i) {
     Vector3i face = tris.col(i);
-    Vector2i tri_pts[3];
     for (int j = 0; j < 3; ++j)
-      tri_pts[j] = pts2.col(face(j));
+      tri_pts.col(j) = pts2.col(face(j));
     buffer.wireTriangle(tri_pts);
   }
 }

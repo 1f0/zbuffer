@@ -47,10 +47,10 @@ public:
     }
   }
 
-  void wireTriangle(const Vector2i t[]) {
+  void wireTriangle(const MatrixXi& t) {
     for (int i = 0; i < 3; ++i) {
       int j = (i + 1) % 3;
-      line(t[i], t[j]);
+      line(t.col(i), t.col(j));
     }
   }
 };
