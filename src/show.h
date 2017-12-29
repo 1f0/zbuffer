@@ -18,8 +18,8 @@ MatrixXi project(const MatrixXf& pts3, float w, float h) {
 void wireframe(const Mesh& mesh, Image& buffer) {
   //TODO: clipping here
   MatrixXi pts2 = project(mesh.tris, buffer.w, buffer.h);
-  Vector2i tris_pts[3];
   for (size_t i = 0; i < pts2.cols(); i=i+3) {
+    Vector2i tris_pts[3];
     for(size_t j=0; j<3; ++j)
       tris_pts[j] = pts2.col(i+j);
     buffer.wireTriangle(tris_pts);

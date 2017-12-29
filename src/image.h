@@ -14,8 +14,13 @@ public:
     return notInside(v[0], v[1]);
   }
 
-  inline void set(size_t i, size_t j, const RGB& color) {
+  inline void set(const size_t i, const size_t j, const RGB& color) {
     if (notInside(i, j)) return;
+    fset(i, j, color);
+  }
+
+  // fast set
+  inline void fset(const size_t i, const size_t j, const RGB& color) {
     for (size_t k = 0; k < 3; ++k)
       frame[3 * (j * w + i) + k] = color[k];
   }
