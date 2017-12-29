@@ -36,7 +36,7 @@ void monitorFPS() {
 int main(int argc, char** argv) {
   if (argc != 2)return printf("usage: %s model.obj\n", argv[0]);
   Mesh mesh(argv[1]);
-  normalize(mesh.pts);
+  normalize(mesh.tris);
 
   GLFWwindow* window;
   /* Initialize the library */

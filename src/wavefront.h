@@ -36,28 +36,29 @@ vector<vector<string> > parseText(const string& file) {
 
 class Mesh {
 public:
-  MatrixXf pts;
-  MatrixXi tris;
+  MatrixXf tris;
   Mesh(const string& filename) {
     vector<vector<string> >lines = parseText(filename);
-    vector<vector<string> >pts_txt, tris_txt;
+    vector<vector<string> >pts_txt, idxs_txt;
     for (size_t i = 0; i < lines.size(); ++i) {
       if (lines[i][0] == "v")
         pts_txt.push_back(lines[i]);
       if (lines[i][0] == "f")
-        tris_txt.push_back(lines[i]);
+        idxs_txt.push_back(lines[i]);
     }
 
     // store value from text
-    pts.resize(3, pts_txt.size());
+    MatrixXf pts(3, pts_txt.size());
     for (size_t i = 0; i < pts_txt.size(); ++i)
       for (size_t j = 0; j < 3; ++j)
         pts(j, i) = stof(pts_txt[i][j + 1]);
 
-    tris.resize(3, tris_txt.size());
-    for (size_t i = 0; i < tris_txt.size(); ++i)
-      for (size_t j = 0; j < 3; ++j)
-        tris(j, i) = stoi(rtrim(tris_txt[i][j + 1])) - 1;
+    tris.resize(3, idxs_txt.size() * 3);
+    for (size_t i = 0; i < idxs_txt.size(); ++i){
+      for (size_t j = 0; j < 3; ++j){
+        int index = stoi(rtrim(idxs_txt[i][j + 1])) - 1;
+        tris.col(3*i + j) = pts.col(index);
+      }
+    }
   }
-  Mesh(const MatrixXi& tris): tris(tris) {}
 };
