@@ -36,7 +36,7 @@ vector<vector<string> > parseText(const string& file) {
 
 class Mesh {
 public:
-  MatrixXf tris;
+  vector<vector<Vector3f> >polygons;
   Mesh(const string& filename) {
     vector<vector<string> >lines = parseText(filename);
     vector<vector<string> >pts_txt, idxs_txt;

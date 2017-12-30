@@ -18,8 +18,8 @@ const RGB red(1, 0, 0);
 const RGB green(0, 1, 0);
 const RGB blue(0, 0, 1);
 
-enum Mode {box, wire, sweep, numOfMode};
-Mode mode = wire;
+enum Mode {sweep, box, wire, numOfMode};
+Mode mode = sweep;
 bool update = true;
 
 // longitude 经度, latidude 纬度

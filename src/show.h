@@ -17,7 +17,6 @@ void wireframe(const Mesh& mesh, Image& buffer) {
 }
 
 void fillBox(const Mesh& mesh, Image& buffer) {
-  //TODO: clipping here
   MatrixXi pts2 = project(mesh.tris, buffer.w, buffer.h);
   RGB color(1, 1, 1);
   for (size_t i = 0; i < pts2.cols(); i = i + 3) {

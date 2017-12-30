@@ -12,7 +12,12 @@ MatrixXi project(const MatrixXf& pts3, float w, float h) {
   return pts2;
 }
 
+class EdgeTable{
+
+};
+
 void lineSweep(const Mesh& mesh, Image& buffer) {
+  MatrixXi pts2 = project(mesh.tris, buffer.w, buffer.h);
   for (size_t i = 0; i < buffer.h; ++i) {
 
   }
