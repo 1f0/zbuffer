@@ -1,5 +1,6 @@
-add_executable(zbuffer main.cpp)
-target_link_libraries(zbuffer
+file(GLOB source *.cpp)
+add_executable(scanline ${source})
+target_link_libraries(scanline
   ${GLFW_LIBRARIES}
   GL
   )

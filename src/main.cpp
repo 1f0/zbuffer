@@ -1,72 +1,28 @@
 // 区间扫描线z缓冲器
-#include "global.h"
-#include "wavefront.h"
-#include "show.h"
-
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-  if (action == GLFW_PRESS || action == GLFW_REPEAT) {
-    switch (key) {
-    case GLFW_KEY_ESCAPE: exit(0);
-    case GLFW_KEY_W: lat -= 0.0625; break;
-    case GLFW_KEY_S: lat += 0.0625; break;
-    case GLFW_KEY_A: lng -= 0.0625; break;
-    case GLFW_KEY_D: lng += 0.0625; break;
-    case GLFW_KEY_Q: if (scale < 128)scale *= 5. / 4; break;
-    case GLFW_KEY_E: if (scale > 1 / 128)scale *= 4. / 5; break;
-    }
-    update = true;
-    cout << "scale:" << scale << " lng:" << lng
-         << " lat:" << lat  << endl;
-  }
-}
-
-void monitorFPS() {
-  static double lastTime = glfwGetTime();
-  static int frameCount = 0;
-  double currentTime = glfwGetTime();
-  ++frameCount;
-  if (currentTime - lastTime >= 1) {
-    cout << "fps: " << frameCount / (currentTime - lastTime) << endl;
-    frameCount = 0;
-    lastTime = currentTime;
-  }
-}
+#include <GLFW/glfw3.h>
+#include "display.h"
+#include "mesh.h"
 
 int main(int argc, char** argv) {
-  if (argc != 2)return printf("usage: %s model.obj\n", argv[0]);
-  Mesh mesh(argv[1]);
-  normalize(mesh.tris);
-
-  GLFWwindow* window;
-  /* Initialize the library */
-  if (!glfwInit())
-    return -1;
+  if (argc != 2) return printf("usage: %s model.obj\n", argv[0]);
+  if (!glfwInit()) return printf("glfw init fail\n");
 
   /* Create a windowed mode window and its OpenGL context */
-  window = glfwCreateWindow(width, height, "Hello World", NULL, NULL);
-  if (!window)
-  {
+  GLFWwindow* window = glfwCreateWindow(Display::width, Display::height, "Scanning Line", NULL, NULL);
+  if (!window){
     glfwTerminate();
-    return -1;
+    return printf("cannot create window\n");
   }
 
-  /* Make the window's context current */
   glfwMakeContextCurrent(window);
-  glfwSetKeyCallback(window, key_callback);
+  glfwSetKeyCallback(window, Display::keyCallback);
 
-  /* Loop until the user closes the window */
-  while (!glfwWindowShouldClose(window))
-  {
-    monitorFPS();
-
-    /* Render here */
+  Mesh mesh(argv[1], true);
+  while (!glfwWindowShouldClose(window)) {
+    Display::monitorFPS();
     glClear(GL_COLOR_BUFFER_BIT);
-
-    show(mesh);
-
-    /* Swap front and back buffers */
+    Display::display(mesh);
     glfwSwapBuffers(window);
-
     /* Poll for and process events */
     glfwPollEvents();
   }
