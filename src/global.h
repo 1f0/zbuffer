@@ -18,7 +18,7 @@ const RGB red(1, 0, 0);
 const RGB green(0, 1, 0);
 const RGB blue(0, 0, 1);
 
-enum Mode {box, wire, sweep, numOfMode};
+enum Mode {box, wire, numOfMode};
 Mode mode = wire;
 bool update = true;
 

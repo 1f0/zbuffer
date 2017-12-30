@@ -3,7 +3,16 @@
 #include "image.h"
 #include "wavefront.h"
 #include "transform.h"
-#include "sweep.h"
+
+MatrixXi project(const MatrixXf& pts3, float w, float h) {
+  float length = min(w, h) - 1;
+
+  MatrixXi pts2(2, pts3.cols());
+  for (size_t i = 0; i < pts3.cols(); ++i) {
+    pts2.col(i) = (pts3.col(i).head(2) * 0.5 * length + 0.5 * Vector2f(w, h)).cast<int>();
+  }
+  return pts2;
+}
 
 void wireframe(const Mesh& mesh, Image& buffer) {
   //TODO: clipping here
@@ -64,7 +73,6 @@ void show(const Mesh& mesh) {
   switch (mode) {
   case wire: wireframe(tmp, buffer); break;
   case box: zFillBox(tmp, buffer); break;
-  case sweep: lineSweep(tmp, buffer); break;
   }
   buffer.display();
 }
