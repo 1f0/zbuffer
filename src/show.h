@@ -5,23 +5,13 @@
 #include "transform.h"
 #include "sweep.h"
 
-MatrixXi project(const MatrixXf& pts3, float w, float h) {
-  float length = min(w, h) - 1;
-
-  MatrixXi pts2(2, pts3.cols());
-  for (size_t i = 0; i < pts3.cols(); ++i) {
-    pts2.col(i) = (pts3.col(i).head(2) * 0.5 * length + 0.5 * Vector2f(w, h)).cast<int>();
-  }
-  return pts2;
-}
-
 void wireframe(const Mesh& mesh, Image& buffer) {
   //TODO: clipping here
   MatrixXi pts2 = project(mesh.tris, buffer.w, buffer.h);
-  for (size_t i = 0; i < pts2.cols(); i=i+3) {
+  for (size_t i = 0; i < pts2.cols(); i = i + 3) {
     Vector2i tris_pts[3];
-    for(size_t j=0; j<3; ++j)
-      tris_pts[j] = pts2.col(i+j);
+    for (size_t j = 0; j < 3; ++j)
+      tris_pts[j] = pts2.col(i + j);
     buffer.wireTriangle(tris_pts);
   }
 }
@@ -29,11 +19,37 @@ void wireframe(const Mesh& mesh, Image& buffer) {
 void fillBox(const Mesh& mesh, Image& buffer) {
   //TODO: clipping here
   MatrixXi pts2 = project(mesh.tris, buffer.w, buffer.h);
-  for (size_t i = 0; i < pts2.cols(); i=i+3) {
+  RGB color(1, 1, 1);
+  for (size_t i = 0; i < pts2.cols(); i = i + 3) {
     Vector2i tris_pts[3];
-    for(size_t j=0; j<3; ++j)
-      tris_pts[j] = pts2.col(i+j);
-    buffer.triangle(tris_pts);
+    for (size_t j = 0; j < 3; ++j)
+      tris_pts[j] = pts2.col(i + j);
+    Vector3f a = mesh.tris.col(i + 1) - mesh.tris.col(i);
+    Vector3f b = mesh.tris.col(i + 2) - mesh.tris.col(i + 1);
+    float intensity = a.cross(b).normalized().dot(light);
+    if (intensity > 0) //back face culling
+      buffer.triangle(tris_pts, color * intensity);
+  }
+}
+
+void zFillBox(const Mesh& mesh, Image& buffer) {
+  MatrixXi pts2 = project(mesh.tris, buffer.w, buffer.h);
+  VectorXf zvalues = mesh.tris.row(2);
+  MatrixXf zbuffer(buffer.w, buffer.h);
+  zbuffer.fill(-numeric_limits<float>::max());
+
+  RGB color(1, 1, 1);
+  for (size_t i = 0; i < pts2.cols(); i = i + 3) {
+    Vector2i tris_pts[3];
+    for (size_t j = 0; j < 3; ++j) {
+      tris_pts[j] = pts2.col(i + j);
+    }
+    Vector3f a = mesh.tris.col(i + 1) - mesh.tris.col(i);
+    Vector3f b = mesh.tris.col(i + 2) - mesh.tris.col(i + 1);
+    float intensity = a.cross(b).normalized().dot(light);
+    if (intensity < 0)
+      intensity *= -0.5;
+    buffer.zb_triangle(tris_pts, zvalues.segment(i, 3).transpose(), zbuffer, color * intensity);
   }
 }
 
@@ -47,7 +63,7 @@ void show(const Mesh& mesh) {
   buffer.clear();
   switch (mode) {
   case wire: wireframe(tmp, buffer); break;
-  case box: fillBox(tmp, buffer); break;
+  case box: zFillBox(tmp, buffer); break;
   case sweep: lineSweep(tmp, buffer); break;
   }
   buffer.display();

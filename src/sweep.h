@@ -2,8 +2,18 @@
 #include "global.h"
 #include "image.h"
 
+MatrixXi project(const MatrixXf& pts3, float w, float h) {
+  float length = min(w, h) - 1;
+
+  MatrixXi pts2(2, pts3.cols());
+  for (size_t i = 0; i < pts3.cols(); ++i) {
+    pts2.col(i) = (pts3.col(i).head(2) * 0.5 * length + 0.5 * Vector2f(w, h)).cast<int>();
+  }
+  return pts2;
+}
+
 void lineSweep(const Mesh& mesh, Image& buffer) {
-	for (size_t i = 0; i < buffer.h; ++i) {
-		
-	}
+  for (size_t i = 0; i < buffer.h; ++i) {
+
+  }
 }

@@ -18,10 +18,12 @@ const RGB red(1, 0, 0);
 const RGB green(0, 1, 0);
 const RGB blue(0, 0, 1);
 
-enum Mode {wire, box, sweep, numOfMode};
+enum Mode {box, wire, sweep, numOfMode};
 Mode mode = wire;
 bool update = true;
 
 // longitude 经度, latidude 纬度
 float lng = 0, lat = 0;
-float scale = 0.5;
+float scale = 0.8;
+
+Vector3f light(0, 0, 1);

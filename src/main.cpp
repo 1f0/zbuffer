@@ -11,8 +11,8 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     case GLFW_KEY_S: lat += 0.0625; break;
     case GLFW_KEY_A: lng -= 0.0625; break;
     case GLFW_KEY_D: lng += 0.0625; break;
-    case GLFW_KEY_Q: if (scale < 128)scale *= 2; break;
-    case GLFW_KEY_E: if (scale > 1 / 128)scale /= 2; break;
+    case GLFW_KEY_Q: if (scale < 128)scale *= 5. / 4; break;
+    case GLFW_KEY_E: if (scale > 1 / 128)scale *= 4. / 5; break;
     case GLFW_KEY_R: mode = static_cast<Mode>((mode + 1) % (numOfMode)); break;
     }
     update = true;

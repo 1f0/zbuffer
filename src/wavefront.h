@@ -54,10 +54,10 @@ public:
         pts(j, i) = stof(pts_txt[i][j + 1]);
 
     tris.resize(3, idxs_txt.size() * 3);
-    for (size_t i = 0; i < idxs_txt.size(); ++i){
-      for (size_t j = 0; j < 3; ++j){
+    for (size_t i = 0; i < idxs_txt.size(); ++i) {
+      for (size_t j = 0; j < 3; ++j) {
         int index = stoi(rtrim(idxs_txt[i][j + 1])) - 1;
-        tris.col(3*i + j) = pts.col(index);
+        tris.col(3 * i + j) = pts.col(index);
       }
     }
   }

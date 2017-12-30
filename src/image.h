@@ -78,29 +78,51 @@ public:
   }
 
   inline Vector3f barycentric(const Vector2i t[], const Vector2i& P) {
-    Vector3f u(t[2][0]-t[0][0], t[1][0]-t[0][0], t[0][0]-P[0]);
-    Vector3f v(t[2][1]-t[0][1], t[1][1]-t[0][1], t[0][1]-P[1]);
+    Vector3f u(t[2][0] - t[0][0], t[1][0] - t[0][0], t[0][0] - P[0]);
+    Vector3f v(t[2][1] - t[0][1], t[1][1] - t[0][1], t[0][1] - P[1]);
     Vector3f tmp = u.cross(v);
-    if(abs(tmp[2])<1)return Vector3f(-1,1,1);//degenerate
-    return Vector3f(1-(tmp.x()+tmp.y())/tmp.z(), tmp.y()/tmp.z(), tmp.x()/tmp.z());
+    if (abs(tmp[2]) < 1)return Vector3f(-1, 1, 1); //degenerate
+    return Vector3f(1 - (tmp.x() + tmp.y()) / tmp.z(), tmp.y() / tmp.z(), tmp.x() / tmp.z());
   }
 
-  void triangle(const Vector2i t[3]) {
-    Vector2i boxmin(w-1, h-1);
+  void triangle(const Vector2i t[3], const RGB& color = white) {
+    Vector2i boxmin(w - 1, h - 1);
     Vector2i boxmax(0, 0);
     Vector2i clamp = boxmin;
-    for(size_t i=0;i<3;++i)
-      for(size_t j=0;j<2;++j){
+    for (size_t i = 0; i < 3; ++i)
+      for (size_t j = 0; j < 2; ++j) {
         boxmin[j] = max(0, min(boxmin[j], t[i][j]));
         boxmax[j] = min(clamp[j], max(boxmax[j], t[i][j]));
       }
     Vector2i P;
-    RGB color(rand()%255, rand()%255, rand()%255);
-    for(P.x()=boxmin.x();P.x()<boxmax.x();P.x()++)
-      for(P.y()=boxmin.y();P.y()<boxmax.y();P.y()++){
+    for (P.x() = boxmin.x(); P.x() < boxmax.x(); P.x()++)
+      for (P.y() = boxmin.y(); P.y() < boxmax.y(); P.y()++) {
         Vector3f bc = barycentric(t, P);
-        if(bc.x()<0||bc.y()<0||bc.z()<0)continue;
+        if (bc.x() < 0 || bc.y() < 0 || bc.z() < 0)continue;
         set(P.x(), P.y(), color);
+      }
+  }
+
+  void zb_triangle(const Vector2i t[3], const Vector3f& tris_z,
+                   MatrixXf& zbuffer, const RGB& color = white) {
+    Vector2i boxmin(w - 1, h - 1);
+    Vector2i boxmax(0, 0);
+    Vector2i clamp = boxmin;
+    for (size_t i = 0; i < 3; ++i)
+      for (size_t j = 0; j < 2; ++j) {
+        boxmin[j] = max(0, min(boxmin[j], t[i][j]));
+        boxmax[j] = min(clamp[j], max(boxmax[j], t[i][j]));
+      }
+    Vector2i P;
+    for (P.x() = boxmin.x(); P.x() < boxmax.x(); ++P.x())
+      for (P.y() = boxmin.y(); P.y() < boxmax.y(); ++P.y()) {
+        Vector3f bc = barycentric(t, P);
+        if (bc.x() < 0 || bc.y() < 0 || bc.z() < 0)continue;
+        float z = tris_z.dot(bc);
+        if (zbuffer(P.x(), P.y()) < z) {
+          zbuffer(P.x(), P.y()) = z;
+          set(P.x(), P.y(), color);
+        }
       }
   }
 };

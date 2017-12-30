@@ -22,7 +22,8 @@ Matrix3f rotateMat(const Vector3f& u, float t) {
 }
 
 void transform(MatrixXf& pts) {
-  pts = rotateMat({1, 0, 0}, lat)*rotateMat({0, 1, 0}, lng)*pts;
+  Vector3f x = rotateMat({1, 0, 0}, lng)*Vector3f(1, 0, 0);
+  pts = rotateMat(x, lat) * rotateMat({0, 1, 0}, lng)*pts;
   pts *= scale;
   update = false;
 }
