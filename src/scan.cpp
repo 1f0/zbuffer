@@ -113,14 +113,17 @@ void scan(const Mesh& mesh, Image& buffer) {
     }
 
     Edge e1 = tmp[0];
+    for (size_t j = 1; j < tmp.size() - 1; ++j) {
+      //update flag
+      pt.flag(e1.poly_id) != pt.flag(e1.poly_id);
 
-    for (size_t j = 1; e1.x < buffer.w;) {
       const Edge& e2 = tmp[j];
       // closest polygon
       size_t closest_id = 0;
       float closest_z = -numeric_limit<float>::max();
       Vector2f coord((e1.x + e2.x) / 2.0, y);
       for (auto poly_id : ipl) {
+        if(pt.flag == false)continue;
         const Vector4f& params = pt.list[poly_id].params;
         float z = -(coord.dot(params.head(2)) + params.w()) / params.z();
         if (z > closest_z) {
@@ -130,10 +133,6 @@ void scan(const Mesh& mesh, Image& buffer) {
       }
 
       drawHorizonal(buffer, e1.x, e2.x, y, pt[closest_id].color);
-
-      //update flag
-      pt.flag(e1.poly_id) != pt.flag(e1.poly_id);
-
       e1 = e2;
     }
 
@@ -144,6 +143,5 @@ void scan(const Mesh& mesh, Image& buffer) {
     for (auto& e : tmp)
       e.x += e.dx;
     aet = tmp;
-
   }
 }
