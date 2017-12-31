@@ -67,9 +67,9 @@ void Mesh::transform(const Vector3f& p) {
 void Mesh::rasterize(const size_t w, const size_t h) {
   float length = min((float)w, (float)h) - 1;
   float offset[2] = {w, h};
-  for (size_t i = 0; i < faces.cols(); ++i)
+  for (size_t i = 0; i < pts.cols(); ++i)
     for (size_t j = 0; j < 2; ++j) {
-      faces(j, i) = (int)(pts(j, i) * length / 2 + offset[j] / 2);
+      pts(j, i) = (int)(pts(j, i) * length / 2 + offset[j] / 2);
     }
 }
 
@@ -91,11 +91,9 @@ Mesh::Mesh(const std::string& filename, bool nomalized) {
     for (size_t j = 0; j < 3; ++j)
       pts(j, i) = stof(pts_txt[i][j + 1]);
 
-  faces.resize(3, vertices_num);
   for (size_t i = 0; i < idxs_txt.size(); ++i) {
     for (size_t j = 0; j < idxs_txt[i].size()-1; ++j) {
-      size_t index = stoi(trimSlash(idxs_txt[i][j + 1])) - 1;
-      faces[i][j] = pts.col(index);
+      faces[i][j] = stoi(trimSlash(idxs_txt[i][j + 1])) - 1;
     }
   }
 

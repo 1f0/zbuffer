@@ -2,7 +2,7 @@
 #include <utility>
 #include <algorithm>
 #include <Eigen/Geometry>
-#include <map>
+#include <limits>
 using namespace Eigen;
 using namespace std;
 
@@ -23,7 +23,7 @@ public:
   Eigen::Vector4f params;//Ax+By+Cz+D=0
   RGB color;
   bool in_flag;
-}
+};
 
 class EdgeTable {
 public:
@@ -33,10 +33,10 @@ public:
 
 EdgeTable::EdgeTable(const Image& buf, const Mesh& m): list(buf.h) {
   for (size_t i = 0; i < m.faces.size(); ++i) {
-    const vector<Vector3f>& f = m.faces[i];
+    const vector<size_t>& f = m.faces[i];
     for (size_t j = 0; j < f.size(); ++j) {
-      Vector3f& a = m.pts[f[(j + 1) % f.size()]];
-      Vector3f& b = m.pts[f[j]];
+      Vector3f a = m.pts.col(f[(j + 1) % f.size()]);
+      Vector3f b = m.pts.col(f[j]);
       // simple clipping
       bool a_not_inside = buf.notInside((int)a.x(), (int)a.y());
       bool b_not_inside = buf.notInside((int)b.x(), (int)b.y());
@@ -59,26 +59,28 @@ EdgeTable::EdgeTable(const Image& buf, const Mesh& m): list(buf.h) {
 }
 
 class PolygonTable {
-  vector<vector<Edge> >list;
+public:
+  vector<Polygon> list;
   PolygonTable(const Mesh& mesh);
   bool& flag(size_t i) {return list[i].in_flag;}
 };
 
 PolygonTable::PolygonTable(const Mesh& m): list(m.faces.size()) {
   for (size_t i = 0; i < m.faces.size(); ++i) {
-    const vector<Vector3f>& f = m.faces[i];
-    Vector3f& a = m.pts[f[0]];
-    Vector3f& b = m.pts[f[1]];
-    Vector3f& c = m.pts[f[2]];
+    const vector<size_t>& f = m.faces[i];
+    const Vector3f& a = m.pts.col(f[0]);
+    const Vector3f& b = m.pts.col(f[1]);
+    const Vector3f& c = m.pts.col(f[2]);
 
     Polygon& poly = list[i];
     Vector3f normal = (b - a).cross(c - b).normalized();
     //TODO: check this
-    params << normal, -b.dot(normal);
+    poly.params << normal, -b.dot(normal);
 
     Vector3f light(0, 0, 1);
-    poly.color = normal.dot(light) * RGB(1, 1, 1);
-    if (poly.color < 0)poly.color *= -0.5; //turn to gray
+    float intensity = normal.dot(light);
+    poly.color = intensity * RGB(1, 1, 1);
+    if (intensity < 0) poly.color *= -0.5; //turn to gray
   }
 }
 
@@ -96,11 +98,11 @@ void scan(const Mesh& mesh, Image& buffer) {
   PolygonTable pt(mesh);
   ActiveEdgeTable aet;
 
-  for (size_t y = 0; y < et.size(); ++y) {
-    if (et[y].empty() && aet.empty())continue;
+  for (size_t y = 0; y < et.list.size(); ++y) {
+    if (et.list[y].empty() && aet.empty())continue;
 
     ActiveEdgeTable tmp;
-    merge(aet.begin(), aet.end(), et[y].begin(), et[y].end(), tmp.begin());
+    merge(aet.begin(), aet.end(), et.list[y].begin(), et.list[y].end(), tmp.begin());
 
     InPolygonList ipl;
     int max_id = -1;
@@ -108,7 +110,7 @@ void scan(const Mesh& mesh, Image& buffer) {
       if (max_id < e.poly_id) {
         ipl.push_back(e.poly_id);
         max_id = e.poly_id;
-        pt.list[e.poly_id] = false;
+        pt.flag(e.poly_id) = false;
       }
     }
 
@@ -120,10 +122,10 @@ void scan(const Mesh& mesh, Image& buffer) {
       const Edge& e2 = tmp[j];
       // closest polygon
       size_t closest_id = 0;
-      float closest_z = -numeric_limit<float>::max();
+      float closest_z = numeric_limits<float>::lowest();
       Vector2f coord((e1.x + e2.x) / 2.0, y);
       for (auto poly_id : ipl) {
-        if(pt.flag == false)continue;
+        if (pt.flag(poly_id) == false)continue;
         const Vector4f& params = pt.list[poly_id].params;
         float z = -(coord.dot(params.head(2)) + params.w()) / params.z();
         if (z > closest_z) {
@@ -132,13 +134,14 @@ void scan(const Mesh& mesh, Image& buffer) {
         }
       }
 
-      drawHorizonal(buffer, e1.x, e2.x, y, pt[closest_id].color);
+      drawHorizonal(buffer, e1.x, e2.x, y, pt.list[closest_id].color);
       e1 = e2;
     }
 
-    remove_if(tmp.begin(), tmp.end(),
-    [&](const Edge & a) {return a.ymax == y + 1},
-    tmp.end());
+    tmp.erase(
+    remove_if(tmp.begin(), tmp.end(), [&](const Edge & a) {return a.ymax == y + 1;}),
+    tmp.end()
+    );
 
     for (auto& e : tmp)
       e.x += e.dx;

@@ -5,7 +5,7 @@
 class Mesh {
 public:
   Eigen::MatrixXf pts;
-  vector<vector<size_t> >faces;
+  std::vector<std::vector<size_t> >faces;
   Mesh(const std::string& filename, bool nomalized = false);
   void rasterize(const size_t w, const size_t h);
   // parameters: longitude latitude scale

@@ -1,6 +1,7 @@
 #pragma once
 #include "image.h"
 #include "mesh.h"
+#include "scan.h"
 #include <Eigen/Dense>
 #include <iostream>
 
@@ -33,7 +34,8 @@ void display(const Mesh& mesh) {
   }
 
   buffer.clear();
-  debugDisplay(cached_mesh, buffer);
+  // debugDisplay(cached_mesh, buffer);
+  scan(cached_mesh, buffer);
   buffer.draw();
 }
 
