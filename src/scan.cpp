@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <Eigen/Geometry>
 #include <limits>
+#include <iostream>
 using namespace Eigen;
 using namespace std;
 
@@ -11,8 +12,8 @@ public:
   int ymax, x;
   float dx;
   size_t poly_id;
-  bool operator< (const Edge& rhs) const {
-    if (x != rhs.x)
+  bool operator < (const Edge& rhs) const {
+    if (x == rhs.x)
       return dx < rhs.dx;
     return x < rhs.x;
   }
@@ -27,7 +28,7 @@ public:
 
 class EdgeTable {
 public:
-  std::vector<std::vector<Edge> >list;
+  vector<vector<Edge> >list;
   EdgeTable(const Image& buffer, const Mesh& mesh);
 };
 
@@ -101,7 +102,7 @@ void scan(const Mesh& mesh, Image& buffer) {
   for (size_t y = 0; y < et.list.size(); ++y) {
     if (et.list[y].empty() && aet.empty())continue;
 
-    ActiveEdgeTable tmp;
+    ActiveEdgeTable tmp(et.list[y].size()+aet.size());
     merge(aet.begin(), aet.end(), et.list[y].begin(), et.list[y].end(), tmp.begin());
 
     InPolygonList ipl;
@@ -115,9 +116,9 @@ void scan(const Mesh& mesh, Image& buffer) {
     }
 
     Edge e1 = tmp[0];
-    for (size_t j = 1; j < tmp.size() - 1; ++j) {
+    for (size_t j = 1; j < tmp.size(); ++j) {
       //update flag
-      pt.flag(e1.poly_id) != pt.flag(e1.poly_id);
+      pt.flag(e1.poly_id) = !pt.flag(e1.poly_id);
 
       const Edge& e2 = tmp[j];
       // closest polygon
@@ -133,7 +134,6 @@ void scan(const Mesh& mesh, Image& buffer) {
           closest_id = poly_id;
         }
       }
-
       drawHorizonal(buffer, e1.x, e2.x, y, pt.list[closest_id].color);
       e1 = e2;
     }

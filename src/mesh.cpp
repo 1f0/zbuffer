@@ -66,9 +66,9 @@ void Mesh::transform(const Vector3f& p) {
 
 void Mesh::rasterize(const size_t w, const size_t h) {
   float length = min((float)w, (float)h) - 1;
-  float offset[2] = {w, h};
+  float offset[3] = {w, h, 0};
   for (size_t i = 0; i < pts.cols(); ++i)
-    for (size_t j = 0; j < 2; ++j) {
+    for (size_t j = 0; j < 3; ++j) {
       pts(j, i) = (int)(pts(j, i) * length / 2 + offset[j] / 2);
     }
 }
