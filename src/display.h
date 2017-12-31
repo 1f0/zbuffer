@@ -15,7 +15,7 @@ float scale = 0.8;
 bool need_update = true;
 
 void debugDisplay(const Mesh& mesh, Image& buffer) {
-  const MatrixXf& pts = mesh.faces;
+  const MatrixXf& pts = mesh.pts;
   const RGB white(1, 1, 1);
   for (size_t i = 0; i < pts.cols(); ++i)
     buffer.set(pts(0, i), pts(1, i), white);

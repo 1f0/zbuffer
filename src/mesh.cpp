@@ -61,7 +61,7 @@ void transformPoints(MatrixXf& pts, const float lng, const float lat, const floa
 }
 
 void Mesh::transform(const Vector3f& p) {
-  transformPoints(faces, p[0], p[1], p[2]);
+  transformPoints(pts, p[0], p[1], p[2]);
 }
 
 void Mesh::rasterize(const size_t w, const size_t h) {
@@ -69,26 +69,24 @@ void Mesh::rasterize(const size_t w, const size_t h) {
   float offset[2] = {w, h};
   for (size_t i = 0; i < faces.cols(); ++i)
     for (size_t j = 0; j < 2; ++j) {
-      faces(j, i) = (int)(faces(j, i) * length / 2 + offset[j] / 2);
+      faces(j, i) = (int)(pts(j, i) * length / 2 + offset[j] / 2);
     }
 }
 
 Mesh::Mesh(const std::string& filename, bool nomalized) {
   vector<vector<string> >lines = parseText(filename);
   vector<vector<string> >pts_txt, idxs_txt;
-  size_t vertices_num = 0;
   for (size_t i = 0; i < lines.size(); ++i) {
     if (lines[i][0] == "v")
       pts_txt.push_back(lines[i]);
     if (lines[i][0] == "f") {
       idxs_txt.push_back(lines[i]);
-      sid.push_back(vertices_num);
-      vertices_num += lines[i].size() - 1;
+      faces.push_back(vector<size_t>(lines[i].size() - 1));
     }
   }
 
   // get coordinates from text
-  MatrixXf pts(3, pts_txt.size());
+  pts.resize(3, pts_txt.size());
   for (size_t i = 0; i < pts_txt.size(); ++i)
     for (size_t j = 0; j < 3; ++j)
       pts(j, i) = stof(pts_txt[i][j + 1]);
@@ -97,9 +95,9 @@ Mesh::Mesh(const std::string& filename, bool nomalized) {
   for (size_t i = 0; i < idxs_txt.size(); ++i) {
     for (size_t j = 0; j < idxs_txt[i].size()-1; ++j) {
       size_t index = stoi(trimSlash(idxs_txt[i][j + 1])) - 1;
-      faces.col(sid[i] + j) = pts.col(index);
+      faces[i][j] = pts.col(index);
     }
   }
 
-  if (nomalized)normalize(faces);
+  if (nomalized)normalize(pts);
 }
