@@ -9,8 +9,8 @@ using namespace std;
 
 class Edge {
 public:
-  int ymax, x;
-  float dx;
+  int ymax;
+  float x, dx;
   size_t poly_id;
   bool operator < (const Edge& rhs) const {
     if (x == rhs.x)
@@ -81,7 +81,7 @@ PolygonTable::PolygonTable(const Mesh& m): list(m.faces.size()) {
     Vector3f light(0, 0, 1);
     float intensity = normal.dot(light);
     poly.color = intensity * RGB(1, 1, 1);
-    if (intensity < 0) poly.color *= -0.5; //turn to gray
+    if (intensity < 0) poly.color *= -0.3; //turn to gray
   }
 }
 
@@ -102,27 +102,28 @@ void scan(const Mesh& mesh, Image& buffer) {
   for (size_t y = 0; y < et.list.size(); ++y) {
     if (et.list[y].empty() && aet.empty())continue;
 
-    ActiveEdgeTable tmp(et.list[y].size()+aet.size());
+    ActiveEdgeTable tmp(et.list[y].size() + aet.size());
     merge(aet.begin(), aet.end(), et.list[y].begin(), et.list[y].end(), tmp.begin());
 
     InPolygonList ipl;
-    int max_id = -1;
-    for (auto e : tmp) {
-      if (max_id < e.poly_id) {
-        ipl.push_back(e.poly_id);
-        max_id = e.poly_id;
-        pt.flag(e.poly_id) = false;
-      }
-    }
+    for (auto && e : tmp)
+      ipl.push_back(e.poly_id);
+    sort(ipl.begin(), ipl.end());
+    auto last = unique(ipl.begin(), ipl.end());
+    ipl.erase(last, ipl.end());
+
+    for (auto && poly_id : ipl)
+      pt.flag(poly_id) = false;
+
 
     Edge e1 = tmp[0];
-    for (size_t j = 1; j < tmp.size(); ++j) {
+    for (size_t j = 1; j < tmp.size(); ++j) {//for all edge pair
       //update flag
       pt.flag(e1.poly_id) = !pt.flag(e1.poly_id);
 
       const Edge& e2 = tmp[j];
       // closest polygon
-      size_t closest_id = 0;
+      int closest_id = -1;
       float closest_z = numeric_limits<float>::lowest();
       Vector2f coord((e1.x + e2.x) / 2.0, y);
       for (auto poly_id : ipl) {
@@ -130,11 +131,12 @@ void scan(const Mesh& mesh, Image& buffer) {
         const Vector4f& params = pt.list[poly_id].params;
         float z = -(coord.dot(params.head(2)) + params.w()) / params.z();
         if (z > closest_z) {
-          z = closest_z;
+          closest_z = z;
           closest_id = poly_id;
         }
       }
-      drawHorizonal(buffer, e1.x, e2.x, y, pt.list[closest_id].color);
+      if (closest_id >= 0)
+        drawHorizonal(buffer, (int)e1.x, (int)e2.x, y, pt.list[closest_id].color);
       e1 = e2;
     }
 
