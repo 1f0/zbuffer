@@ -32,7 +32,8 @@ public:
 class PolygonTable {
 public:
   std::vector<Polygon> list;
-  void update(const Mesh& mesh);
+  void updateAfterRasterize(const Mesh& mesh);
+  void calculateColor(const Mesh& m);
   PolygonTable(const Mesh& mesh);
   bool& flag(size_t i) {return list[i].in_flag;}
 };

@@ -31,9 +31,12 @@ void display(const Mesh& mesh) {
   if (need_update) {
     cached_mesh = mesh;//restore
     cached_mesh.transform({lng, lat, scale});
+    pt.calculateColor(cached_mesh);
+
     cached_mesh.rasterize(width, height);
+    pt.updateAfterRasterize(cached_mesh);
     et.update(buffer, cached_mesh);
-    pt.update(cached_mesh);
+
     need_update = false;
   }
 

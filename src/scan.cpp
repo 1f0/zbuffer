@@ -7,13 +7,12 @@
 using namespace Eigen;
 using namespace std;
 
-EdgeTable::EdgeTable(const Image& buf, const Mesh& m) {
-  update(buf, m);
-}
+EdgeTable::EdgeTable(const Image& buf, const Mesh& m):list(buf.h) {}
 
 void EdgeTable::update(const Image& buf, const Mesh& m) {
-  list.clear();
-  list.resize(buf.h);
+  for (auto& entry : list)
+    entry.clear();
+
   for (size_t i = 0; i < m.faces.size(); ++i) {
     const vector<size_t>& f = m.faces[i];
     for (size_t j = 0; j < f.size(); ++j) {
@@ -40,13 +39,11 @@ void EdgeTable::update(const Image& buf, const Mesh& m) {
     sort(entry.begin(), entry.end());
 }
 
-PolygonTable::PolygonTable(const Mesh& m) {
-  update(m);
+PolygonTable::PolygonTable(const Mesh& m):list(m.faces.size()) {
+  calculateColor(m);
 }
 
-void PolygonTable::update(const Mesh& m) {
-  list.clear();
-  list.resize(m.faces.size());
+void PolygonTable::calculateColor(const Mesh& m) {
   for (size_t i = 0; i < m.faces.size(); ++i) {
     const vector<size_t>& f = m.faces[i];
     const Vector3f& a = m.pts.col(f[0]);
@@ -55,13 +52,21 @@ void PolygonTable::update(const Mesh& m) {
 
     Polygon& poly = list[i];
     Vector3f normal = (b - a).cross(c - b).normalized();
-    //TODO: check this
-    poly.params << normal, -b.dot(normal);
+    poly.params << normal, 0;
 
     Vector3f light(0, 0, 1);
     float intensity = normal.dot(light);
     poly.color = intensity * RGB(1, 1, 1);
     if (intensity < 0) poly.color *= -0.4; //turn to gray
+  }
+}
+
+void PolygonTable::updateAfterRasterize(const Mesh& m) {
+  for (size_t i = 0; i < m.faces.size(); ++i) {
+    const vector<size_t>& f = m.faces[i];
+    const Vector3f& a = m.pts.col(f[0]);
+    Polygon& poly = list[i];
+    poly.params.w() = -a.dot(poly.params.head(3));
   }
 }
 
@@ -91,7 +96,6 @@ void scan(const Mesh& mesh, const EdgeTable& et, PolygonTable& pt, Image& buffer
 
     for (auto && poly_id : ipl)
       pt.flag(poly_id) = false;
-
 
     Edge e1 = tmp[0];
     for (size_t j = 1; j < tmp.size(); ++j) {//for all edge pair
