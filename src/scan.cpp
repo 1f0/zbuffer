@@ -4,10 +4,11 @@
 #include <Eigen/Geometry>
 #include <limits>
 #include <iostream>
+#include <set>
 using namespace Eigen;
 using namespace std;
 
-EdgeTable::EdgeTable(const Image& buf, const Mesh& m):list(buf.h) {}
+EdgeTable::EdgeTable(const Image& buf, const Mesh& m): list(buf.h) {}
 
 void EdgeTable::update(const Image& buf, const Mesh& m) {
   for (auto& entry : list)
@@ -39,7 +40,7 @@ void EdgeTable::update(const Image& buf, const Mesh& m) {
     sort(entry.begin(), entry.end());
 }
 
-PolygonTable::PolygonTable(const Mesh& m):list(m.faces.size()) {
+PolygonTable::PolygonTable(const Mesh& m): list(m.faces.size()) {
   calculateColor(m);
 }
 
@@ -78,6 +79,46 @@ inline void drawHorizonal(Image& buffer, size_t start, size_t end, size_t y, con
     buffer.set(i, y, color);
 }
 
+void postprocess(ActiveEdgeTable& tmp, const size_t y) {
+  tmp.erase(
+  remove_if(tmp.begin(), tmp.end(), [&](const Edge & a) {return a.ymax == y + 1;}),
+  tmp.end()
+  );
+
+  for (auto& e : tmp)
+    e.x += e.dx;
+  sort(tmp.begin(), tmp.end());
+}
+
+
+// don't using std::map or std::set to do this
+// it is slow
+void buildIPL(InPolygonList& ipl, const ActiveEdgeTable& tmp) {
+  for (auto && e : tmp)
+    ipl.push_back(e.poly_id);
+  sort(ipl.begin(), ipl.end());
+  auto last = unique(ipl.begin(), ipl.end());
+  ipl.erase(last, ipl.end());
+
+}
+
+int findClosest(PolygonTable& pt, const InPolygonList& ipl, const Vector2f& coord) {
+  // closest polygon
+  int closest_id = -1;
+  float closest_z = numeric_limits<float>::lowest();
+
+  for (auto poly_id : ipl) {
+    if (pt.flag(poly_id) == false)continue;
+    const Vector4f& params = pt.list[poly_id].params;
+    float z = -(coord.dot(params.head(2)) + params.w()) / params.z();
+    if (z > closest_z) {
+      closest_z = z;
+      closest_id = poly_id;
+    }
+  }
+  return closest_id;
+}
+
 void scan(const Mesh& mesh, const EdgeTable& et, PolygonTable& pt, Image& buffer) {
   ActiveEdgeTable aet;
 
@@ -88,11 +129,7 @@ void scan(const Mesh& mesh, const EdgeTable& et, PolygonTable& pt, Image& buffer
     merge(aet.begin(), aet.end(), et.list[y].begin(), et.list[y].end(), tmp.begin());
 
     InPolygonList ipl;
-    for (auto && e : tmp)
-      ipl.push_back(e.poly_id);
-    sort(ipl.begin(), ipl.end());
-    auto last = unique(ipl.begin(), ipl.end());
-    ipl.erase(last, ipl.end());
+    buildIPL(ipl, tmp);
 
     for (auto && poly_id : ipl)
       pt.flag(poly_id) = false;
@@ -101,34 +138,17 @@ void scan(const Mesh& mesh, const EdgeTable& et, PolygonTable& pt, Image& buffer
     for (size_t j = 1; j < tmp.size(); ++j) {//for all edge pair
       //update flag
       pt.flag(e1.poly_id) = !pt.flag(e1.poly_id);
-
       const Edge& e2 = tmp[j];
-      // closest polygon
-      int closest_id = -1;
-      float closest_z = numeric_limits<float>::lowest();
-      Vector2f coord((e1.x + e2.x) / 2.0, y);
-      for (auto poly_id : ipl) {
-        if (pt.flag(poly_id) == false)continue;
-        const Vector4f& params = pt.list[poly_id].params;
-        float z = -(coord.dot(params.head(2)) + params.w()) / params.z();
-        if (z > closest_z) {
-          closest_z = z;
-          closest_id = poly_id;
-        }
+
+      if (e1.x != e2.x) {
+        int closest_id = findClosest(pt, ipl, Vector2f((e1.x + e2.x) / 2.0, y));
+        if (closest_id >= 0)
+          drawHorizonal(buffer, (int)e1.x, (int)e2.x, y, pt.list[closest_id].color);
       }
-      if (closest_id >= 0)
-        drawHorizonal(buffer, (int)e1.x, (int)e2.x, y, pt.list[closest_id].color);
       e1 = e2;
     }
 
-    tmp.erase(
-    remove_if(tmp.begin(), tmp.end(), [&](const Edge & a) {return a.ymax == y + 1;}),
-    tmp.end()
-    );
-
-    for (auto& e : tmp)
-      e.x += e.dx;
-    sort(tmp.begin(), tmp.end());
+    postprocess(tmp, y);
     aet = tmp;
   }
 }
