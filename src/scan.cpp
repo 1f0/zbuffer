@@ -147,6 +147,7 @@ void scan(const Mesh& mesh, Image& buffer) {
 
     for (auto& e : tmp)
       e.x += e.dx;
+    sort(tmp.begin(), tmp.end());
     aet = tmp;
   }
 }
