@@ -25,17 +25,20 @@ void debugDisplay(const Mesh& mesh, Image& buffer) {
 void display(const Mesh& mesh) {
   static Image buffer(width, height);
   static Mesh cached_mesh = mesh;
+  static EdgeTable et(buffer, cached_mesh);
+  static PolygonTable pt(cached_mesh);
 
   if (need_update) {
     cached_mesh = mesh;//restore
     cached_mesh.transform({lng, lat, scale});
     cached_mesh.rasterize(width, height);
+    et.update(buffer, cached_mesh);
+    pt.update(cached_mesh);
     need_update = false;
   }
 
   buffer.clear();
-  // debugDisplay(cached_mesh, buffer);
-  scan(cached_mesh, buffer);
+  scan(cached_mesh, et, pt, buffer);
   buffer.draw();
 }
 
@@ -71,4 +74,3 @@ void monitorFPS() {
   }
 }
 }
-

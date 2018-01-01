@@ -92,7 +92,7 @@ Mesh::Mesh(const std::string& filename, bool nomalized) {
       pts(j, i) = stof(pts_txt[i][j + 1]);
 
   for (size_t i = 0; i < idxs_txt.size(); ++i) {
-    for (size_t j = 0; j < idxs_txt[i].size()-1; ++j) {
+    for (size_t j = 0; j < idxs_txt[i].size() - 1; ++j) {
       faces[i][j] = stoi(trimSlash(idxs_txt[i][j + 1])) - 1;
     }
   }

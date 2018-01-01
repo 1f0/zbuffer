@@ -9,7 +9,7 @@ int main(int argc, char** argv) {
 
   /* Create a windowed mode window and its OpenGL context */
   GLFWwindow* window = glfwCreateWindow(Display::width, Display::height, "Scanning Line", NULL, NULL);
-  if (!window){
+  if (!window) {
     glfwTerminate();
     return printf("cannot create window\n");
   }

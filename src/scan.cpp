@@ -7,32 +7,13 @@
 using namespace Eigen;
 using namespace std;
 
-class Edge {
-public:
-  int ymax;
-  float x, dx;
-  size_t poly_id;
-  bool operator < (const Edge& rhs) const {
-    if (x == rhs.x)
-      return dx < rhs.dx;
-    return x < rhs.x;
-  }
-};
+EdgeTable::EdgeTable(const Image& buf, const Mesh& m) {
+  update(buf, m);
+}
 
-class Polygon {
-public:
-  Eigen::Vector4f params;//Ax+By+Cz+D=0
-  RGB color;
-  bool in_flag;
-};
-
-class EdgeTable {
-public:
-  vector<vector<Edge> >list;
-  EdgeTable(const Image& buffer, const Mesh& mesh);
-};
-
-EdgeTable::EdgeTable(const Image& buf, const Mesh& m): list(buf.h) {
+void EdgeTable::update(const Image& buf, const Mesh& m) {
+  list.clear();
+  list.resize(buf.h);
   for (size_t i = 0; i < m.faces.size(); ++i) {
     const vector<size_t>& f = m.faces[i];
     for (size_t j = 0; j < f.size(); ++j) {
@@ -59,14 +40,13 @@ EdgeTable::EdgeTable(const Image& buf, const Mesh& m): list(buf.h) {
     sort(entry.begin(), entry.end());
 }
 
-class PolygonTable {
-public:
-  vector<Polygon> list;
-  PolygonTable(const Mesh& mesh);
-  bool& flag(size_t i) {return list[i].in_flag;}
-};
+PolygonTable::PolygonTable(const Mesh& m) {
+  update(m);
+}
 
-PolygonTable::PolygonTable(const Mesh& m): list(m.faces.size()) {
+void PolygonTable::update(const Mesh& m) {
+  list.clear();
+  list.resize(m.faces.size());
   for (size_t i = 0; i < m.faces.size(); ++i) {
     const vector<size_t>& f = m.faces[i];
     const Vector3f& a = m.pts.col(f[0]);
@@ -81,12 +61,11 @@ PolygonTable::PolygonTable(const Mesh& m): list(m.faces.size()) {
     Vector3f light(0, 0, 1);
     float intensity = normal.dot(light);
     poly.color = intensity * RGB(1, 1, 1);
-    if (intensity < 0) poly.color *= -0.3; //turn to gray
+    if (intensity < 0) poly.color *= -0.4; //turn to gray
   }
 }
 
 typedef vector<Edge> ActiveEdgeTable;
-// typedef map<size_t, bool> InPolygonList;
 typedef vector<size_t> InPolygonList;
 
 inline void drawHorizonal(Image& buffer, size_t start, size_t end, size_t y, const RGB& color) {
@@ -94,9 +73,7 @@ inline void drawHorizonal(Image& buffer, size_t start, size_t end, size_t y, con
     buffer.set(i, y, color);
 }
 
-void scan(const Mesh& mesh, Image& buffer) {
-  EdgeTable et(buffer, mesh);
-  PolygonTable pt(mesh);
+void scan(const Mesh& mesh, const EdgeTable& et, PolygonTable& pt, Image& buffer) {
   ActiveEdgeTable aet;
 
   for (size_t y = 0; y < et.list.size(); ++y) {
